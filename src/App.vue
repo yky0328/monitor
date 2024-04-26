@@ -197,9 +197,9 @@ export default {
       this.$set(this.lines_option.series,5, data.series[1]);
     },
 
-    // mem_update(data){
-    //   this.$set(this.lines_option.series,6, data.series[0]);
-    // },
+    mem_update(data){
+      this.$set(this.lines_option.series,6, data.series[0]);
+    },
 
     disk_io_update(data){
       this.$set(this.lines_option.series,7, data.series[0]);
