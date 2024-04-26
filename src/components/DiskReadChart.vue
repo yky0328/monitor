@@ -10,7 +10,7 @@ export default {
 
   props: ["starttime", "endtime"],
 
-  data() {
+  data() {  
     return {
       myChart: null,
       query_a:
