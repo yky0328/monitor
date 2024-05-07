@@ -29,10 +29,14 @@
         >
         </el-date-picker>
       </v-col>
+
       <el-button @click="confirm">确定</el-button>
+
+
     </v-row>
 
-    <div> <selected-lines :option="lines_option"/></div>
+    <div><selected-lines :option="lines_option" /></div>
+
     <v-row style="display: flex">
       <v-col cols="6">
         <tps-chart />
@@ -42,48 +46,84 @@
         <rt-chart />
       </v-col>
     </v-row>
-    <div id="cpu"><cpu-chart :starttime="starttimeprops" :endtime="endtimeprops" @update="cpu_update"/> </div>
+    <div id="cpu">
+      <cpu-chart
+        :starttime="starttimeprops"
+        :endtime="endtimeprops"
+        @update="cpu_update"
+      />
+    </div>
     <v-row style="display: flex">
       <v-col cols="6">
-        <context-switch-chart :starttime="starttimeprops" :endtime="endtimeprops" @update="cs_update"/>
+        <context-switch-chart
+          :starttime="starttimeprops"
+          :endtime="endtimeprops"
+          @update="cs_update"
+        />
       </v-col>
 
       <v-col cols="6">
-        <intr-chart :starttime="starttimeprops" :endtime="endtimeprops" @update="intr_update"/>
+        <intr-chart
+          :starttime="starttimeprops"
+          :endtime="endtimeprops"
+          @update="intr_update"
+        />
       </v-col>
     </v-row>
 
     <v-row style="display: flex">
       <v-col cols="6">
-        <diskio-chart :starttime="starttimeprops" :endtime="endtimeprops" @update="disk_io_update"/>
+        <diskio-chart
+          :starttime="starttimeprops"
+          :endtime="endtimeprops"
+          @update="disk_io_update"
+        />
       </v-col>
 
       <v-col cols="6">
-        <mem-chart :starttime="starttimeprops" :endtime="endtimeprops" @update="mem_update"/>
+        <mem-chart
+          :starttime="starttimeprops"
+          :endtime="endtimeprops"
+          @update="mem_update"
+        />
       </v-col>
     </v-row>
 
     <v-row style="display: flex">
       <v-col cols="6">
-        <disk-read-chart :starttime="starttimeprops" :endtime="endtimeprops" @update="disk_read_update"/>
+        <disk-read-chart
+          :starttime="starttimeprops"
+          :endtime="endtimeprops"
+          @update="disk_read_update"
+        />
       </v-col>
 
       <v-col cols="6">
-        <disk-written-chart :starttime="starttimeprops" :endtime="endtimeprops" @update="disk_written_update"/>
+        <disk-written-chart
+          :starttime="starttimeprops"
+          :endtime="endtimeprops"
+          @update="disk_written_update"
+        />
       </v-col>
     </v-row>
 
     <v-row style="display: flex">
       <v-col cols="6">
-        <pgfault-chart :starttime="starttimeprops" :endtime="endtimeprops" @update="pgfault_update" />
+        <pgfault-chart
+          :starttime="starttimeprops"
+          :endtime="endtimeprops"
+          @update="pgfault_update"
+        />
       </v-col>
 
       <v-col cols="6">
-        <pgmajfault-chart :starttime="starttimeprops" :endtime="endtimeprops" @update="pgmajfault_update"/>
+        <pgmajfault-chart
+          :starttime="starttimeprops"
+          :endtime="endtimeprops"
+          @update="pgmajfault_update"
+        />
       </v-col>
     </v-row>
-
-
   </v-row>
 </template>
 
@@ -123,105 +163,118 @@ export default {
 
   data() {
     return {
-      starttime: "",
-      endtime: "",
-      starttimeprops:"",
-      endtimeprops:"",
+      // starttime: "",
+      // endtime: "",
+      // starttimeprops: "",
+      // endtimeprops: "",
+      starttime: new Date(Date.now() - 1800 * 1000),
+      endtime: new Date(),
+      starttimeprops: "",
+      endtimeprops: "",
+      queryinterval: 15000,
       lines_option: {
         title: {
-          text: 'all'
+          text: "all",
         },
         tooltip: {
-          trigger: 'axis',
+          trigger: "axis",
           axisPointer: {
-            type: 'cross',
+            type: "cross",
             label: {
-              backgroundColor: '#6a7985'
-            }
-          }
+              backgroundColor: "#6a7985",
+            },
+          },
         },
         xAxis: {
-          type: 'category',
+          type: "category",
           boundaryGap: false,
           data: [], // X轴时间戳数据将在下面填充
           axisLabel: {
             formatter: function (value) {
               // 将时间戳转换为更易读的格式，例如 'YYYY-MM-DD HH:mm:ss'
               const date = new Date(value * 1000);
-              return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-            }
-          }
+              return `${date.getFullYear()}-${
+                date.getMonth() + 1
+              }-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+            },
+          },
         },
         yAxis: {
-          type: 'value'
+          type: "value",
         },
-        series: [
-        ]
+        series: [],
       },
     };
   },
+
   // mounted() {
   //   this.$refs.chart1.drawChart();
   //   this.$refs.chart2.drawChart();
   // },
 
-  methods: {
+  mounted() {
+    setInterval(() => {
+      const now = new Date();
+      this.endtime = new Date(); // 当前时间
+      this.starttime = new Date(now.getTime() - 1800 * 1000); // 30分钟前的时间
+      this.confirm(); // 更新 props 并触发数据刷新
+    }, this.queryinterval); // 每X秒执行一次
+  },
 
-    confirm(){
+  methods: {
+    confirm() {
       this.starttimeprops = this.starttime;
       this.endtimeprops = this.endtime;
     },
 
-    pgmajfault_update(data){
+    pgmajfault_update(data) {
       // this.lines_option.xAxis.data = data.xAxis.data;
-      this.$set(this.lines_option.series,1, data.series[0]);
+      this.$set(this.lines_option.series, 1, data.series[0]);
       // this.lines_option.series[0] = data.series[0];
-
     },
 
     pgfault_update(data) {
       this.lines_option.xAxis.data = data.xAxis.data;
-      console.log("data emit", data)
+      console.log("data emit", data);
       // this.lines_option.series[0] = data.series[0];
-      this.$set(this.lines_option.series,0, data.series[0]);
+      this.$set(this.lines_option.series, 0, data.series[0]);
       console.log(this.lines_option);
     },
 
-    disk_read_update(data){
-      this.$set(this.lines_option.series,2, data.series[0]);
-      this.$set(this.lines_option.series,3, data.series[1]);
+    disk_read_update(data) {
+      this.$set(this.lines_option.series, 2, data.series[0]);
+      this.$set(this.lines_option.series, 3, data.series[1]);
     },
 
-    disk_written_update(data){
-      this.$set(this.lines_option.series,4, data.series[0]);
-      this.$set(this.lines_option.series,5, data.series[1]);
+    disk_written_update(data) {
+      this.$set(this.lines_option.series, 4, data.series[0]);
+      this.$set(this.lines_option.series, 5, data.series[1]);
     },
 
-    mem_update(data){
-      this.$set(this.lines_option.series,6, data.series[0]);
+    mem_update(data) {
+      this.$set(this.lines_option.series, 6, data.series[0]);
     },
 
-    disk_io_update(data){
-      this.$set(this.lines_option.series,7, data.series[0]);
-      this.$set(this.lines_option.series,8, data.series[1]);
+    disk_io_update(data) {
+      this.$set(this.lines_option.series, 7, data.series[0]);
+      this.$set(this.lines_option.series, 8, data.series[1]);
     },
 
-    intr_update(data){
-      this.$set(this.lines_option.series,9, data.series[0]);
+    intr_update(data) {
+      this.$set(this.lines_option.series, 9, data.series[0]);
     },
 
-    cs_update(data){
-      this.$set(this.lines_option.series,10, data.series[0]);
+    cs_update(data) {
+      this.$set(this.lines_option.series, 10, data.series[0]);
     },
 
-    cpu_update(data){
-      this.$set(this.lines_option.series,11, data.series[0]);
-      this.$set(this.lines_option.series,12, data.series[1]);
-      this.$set(this.lines_option.series,13, data.series[2]);
-      this.$set(this.lines_option.series,14, data.series[3]);
-      this.$set(this.lines_option.series,15, data.series[4]);
+    cpu_update(data) {
+      this.$set(this.lines_option.series, 11, data.series[0]);
+      this.$set(this.lines_option.series, 12, data.series[1]);
+      this.$set(this.lines_option.series, 13, data.series[2]);
+      this.$set(this.lines_option.series, 14, data.series[3]);
+      this.$set(this.lines_option.series, 15, data.series[4]);
     },
-
   },
 };
 </script>
